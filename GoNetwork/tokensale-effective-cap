@@ -28,3 +28,31 @@ Days	Effective Max CAP
 26	  55,924.93
 27	  53,854.75
 28	  51,932.36
+
+=================================
+Tokens Price calculation function
+=================================
+uint256 constant public CURVE_CUTOFF_DURATION = 8 days;
+function calcTokenPrice() constant private returns (uint256) {
+        uint256 elapsed;
+        uint256 decay_rate1;
+        uint256 decay_rate2;
+      
+        if (stage == Stages.AuctionStarted) {
+            elapsed = now - auction_start_time;
+            // The first eight days auction price curve
+            if (now >= auction_start_time && now < auction_start_time + CURVE_CUTOFF_DURATION){
+              decay_rate1 = elapsed ** price_exponent1 / price_constant1;
+              return price_start * (1 + elapsed) / (1 + elapsed + decay_rate1);
+            }
+            // The remaining days auction price curve
+            else if (now >= auction_start_time && now >= auction_start_time + CURVE_CUTOFF_DURATION){
+              decay_rate2 = elapsed ** price_exponent2 / price_constant2;
+              return price_start * (1 + elapsed) / (1 + elapsed + decay_rate2);
+            }
+            else {
+              return price_start;
+            }
+
+        }
+    }
